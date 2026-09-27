@@ -1,0 +1,56 @@
+name: Build OpenMAIC image (linux/amd64)
+
+# Why this exists: the deployment target is an Aliyun ECS with ~1.6 GB of RAM,
+# which cannot build this image (a Next.js build needs ~2.4 GB and the box is
+# already running other services). The Mac that holds the source is arm64, and
+# the ECS is amd64, so a local build produces the wrong architecture. GitHub's
+# runners are native amd64 with 16 GB, which is the only machine in this setup
+# that can produce the right image.
+#
+# The output is a `docker save` tarball rather than a registry push: the ECS
+# loads it with `docker load`.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: openmaic-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (linux/amd64)
+        run: |
+          set -euo pipefail
+          TAG="openmaic-rhine:${GITHUB_SHA::12}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_PRO_WORKBENCH_ENABLED=true \
+            --load \
+            -t "$TAG" .
+          docker images openmaic-rhine
+
+      - name: Save the image
+        run: |
+          set -euo pipefail
+          TAG="openmaic-rhine:${GITHUB_SHA::12}"
+          docker save "$TAG" | gzip -9 > openmaic-rhine-image.tar.gz
+          ls -lh openmaic-rhine-image.tar.gz
+          echo "IMAGE_TAG=${GITHUB_SHA::12}" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openmaic-rhine-image
+          path: openmaic-rhine-image.tar.gz
+          retention-days: 3
+          if-no-files-found: error

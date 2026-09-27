@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">RHINE LAB</title>
+  <rect x="1" y="1" width="126" height="126" rx="23" fill="#e8eddf" stroke="#9cae87"/>
+  <circle cx="64" cy="64" r="40" fill="none" stroke="#5b7349" stroke-width="4"/>
+  <path d="M64 20v88M20 64h88M35 35l58 58M93 35 35 93" stroke="#769163" stroke-width="1.8"/>
+  <circle cx="64" cy="64" r="14" fill="#f7f8f1" stroke="#5b7349" stroke-width="3"/>
+  <circle cx="64" cy="64" r="4.5" fill="#5b7349"/>
+</svg>

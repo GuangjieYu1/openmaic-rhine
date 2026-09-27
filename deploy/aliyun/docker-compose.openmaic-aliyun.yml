@@ -1,0 +1,64 @@
+# OpenMAIC on an Aliyun ECS, coexisting with the services already on that host
+# public interface — the app binds loopback and Cloudflare Tunnel carries it out, so
+# this stack needs NO security-group change at all.
+#
+# Memory note: that ECS has ~1.6 GB RAM and already runs BIA + SearXNG + Nginx. The
+# Postgres below is therefore tuned down from its defaults (shared_buffers 128MB ->
+# 64MB, max_connections 100 -> 20) rather than left at the image defaults, which
+# alone would reserve ~200 MB this box does not have to spare.
+services:
+  openmaic:
+    image: ${OPENMAIC_IMAGE_TAG}
+    ports:
+      # Loopback only. Cloudflare Tunnel dials 127.0.0.1:3000 from the host.
+      - '127.0.0.1:3000:3000'
+    env_file:
+      - .env
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=384
+    volumes:
+      - openmaic-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    # The box is small; cap the app so a runaway course generation cannot take
+    # BIA down with it.
+    mem_limit: 700m
+
+  postgres:
+    # -alpine: the debian image's locale/ICU payload is ~150 MB of disk this box
+    # does not need to spend.
+    image: postgres:16-alpine
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=20
+      - -c
+      - effective_cache_size=256MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=32MB
+    ports:
+      - '127.0.0.1:5433:5432'
+    environment:
+      - POSTGRES_DB=openmaic
+      - POSTGRES_USER=openmaic
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    volumes:
+      - openmaic-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U openmaic -d openmaic']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    mem_limit: 320m
+
+volumes:
+  openmaic-data:
+  openmaic-postgres:

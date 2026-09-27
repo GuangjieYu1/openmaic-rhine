@@ -1,0 +1,25 @@
+[Unit]
+Description=Cloudflare quick tunnel for OpenMAIC
+Documentation=https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# --no-autoupdate: this box has ~1.6 GB of RAM and already runs three other
+# services; a background self-update is not worth the memory or the surprise
+# restart.
+#
+# A quick tunnel needs no Cloudflare account and no inbound port, which is why
+# it fits this host: nothing new is published in the security group.
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:3000
+Restart=always
+RestartSec=5
+# The public URL is printed once at startup. Keep it in the journal so it can be
+# recovered after a restart:
+#   journalctl -u cloudflared-openmaic | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
