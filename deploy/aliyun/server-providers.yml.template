@@ -1,0 +1,34 @@
+# Server-owned provider credentials for this OpenMAIC deployment.
+#
+# The app reads this file from its own working directory (see
+# lib/server/provider-config.ts: loadYamlFile joins process.cwd() with the
+# filename, and the image's WORKDIR is /app). docker-compose mounts the real
+# file read-only at /app/server-providers.yml.
+#
+# Anything declared here is "server-managed": the server's key and base URL win
+# over whatever a browser sends, and the values are never exposed through
+# /api/server-providers (that endpoint reports only provider ids + model lists).
+#
+# Operators: copy this to server-providers.yml next to the compose file, fill in
+# the secrets, and chmod 644 so the unprivileged container user (uid 1001) can
+# read it. Keep the directory itself root-owned. The file is gitignored.
+#
+# Sections map to capabilities: providers (LLM), tts, asr, pdf, image, video,
+# web-search. Entries take apiKey / baseUrl / models / proxy, plus two
+# YAML-only fields: `type` and `headers`.
+
+providers:
+  # opencode's "zen go" gateway. It is deliberately NOT in the built-in catalog,
+  # so `type` is what tells the server which wire protocol to speak.
+  opencode-go:
+    apiKey: REPLACE_WITH_OPENCODE_GO_KEY
+    baseUrl: https://opencode.ai/zen/go/v1
+    # REQUIRED for out-of-catalog ids; ignored for built-ins (the registry wins).
+    type: openai
+    models:
+      - deepseek-v4.1-flash
+    # This gateway rejects every request that omits x-opencode-session with
+    # HTTP 400 {"error":{"type":"MissingSessionID"}}. A random v4 UUID works;
+    # it is a routing/attribution id, not a credential.
+    headers:
+      x-opencode-session: REPLACE_WITH_A_RANDOM_UUID_V4

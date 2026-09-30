@@ -1,0 +1,24 @@
+[Unit]
+Description=Cloudflare named tunnel for OpenMAIC
+Documentation=https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# --no-autoupdate: this box has ~1.6 GB of RAM and already runs other services;
+# a background self-update is not worth the memory or the surprise restart.
+#
+# A named tunnel rather than a quick one: a quick tunnel's hostname is random
+# and changes on every restart, which would mean re-entering the origin on the
+# iPad each time. The named tunnel serves a fixed hostname from
+# /root/.cloudflared/config.yml, and like the quick tunnel it is an OUTBOUND
+# connection — nothing new is published in the security group.
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate --config /root/.cloudflared/config.yml run openmaic
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

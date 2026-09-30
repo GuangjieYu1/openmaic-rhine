@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="464" height="94" viewBox="0 0 464 94" role="img" aria-labelledby="title">
+  <title id="title">RHINE LAB · OpenMAIC Learning System</title>
+  <rect x="1" y="1" width="92" height="92" rx="17" fill="#e8eddf" stroke="#9cae87"/>
+  <circle cx="47" cy="47" r="29" fill="none" stroke="#5b7349" stroke-width="3"/>
+  <path d="M47 15v64M15 47h64M26 26l42 42M68 26 26 68" stroke="#769163" stroke-width="1.4"/>
+  <circle cx="47" cy="47" r="10" fill="#f7f8f1" stroke="#5b7349" stroke-width="2"/>
+  <circle cx="47" cy="47" r="3.3" fill="#5b7349"/>
+  <text x="117" y="51" fill="#3d5036" font-family="DM Sans,Inter,Arial,sans-serif" font-size="42" font-weight="650" letter-spacing="-1.5">RHINE LAB</text>
+  <path d="M118 64h344" stroke="#a8b799"/>
+  <text x="119" y="83" fill="#6d8062" font-family="DM Sans,Inter,Arial,sans-serif" font-size="12" letter-spacing="3.5">OPENMAIC  /  LEARNING SYSTEM</text>
+</svg>
