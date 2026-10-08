@@ -1,0 +1,20 @@
+# Cloudflare named-tunnel ingress for OpenMAIC.
+#
+# Copy to /root/.cloudflared/config.yml on the ECS and fill in the two
+# placeholders. The tunnel id comes from `cloudflared tunnel create <name>`,
+# which also writes the matching credentials file next to it.
+#
+# The hostname must already carry a CNAME to this tunnel; create it with
+#   cloudflared tunnel route dns <tunnel-name> <hostname>
+# rather than adding an A record in the dashboard — an A record to the ECS IP
+# would not work (the mainland security group keeps 80/443 closed without an
+# ICP filing) and would conflict with the tunnel's own record.
+tunnel: <tunnel-uuid from `cloudflared tunnel list`>
+credentials-file: /root/.cloudflared/<tunnel-uuid>.json
+
+ingress:
+  - hostname: <subdomain.your-domain>
+    service: http://127.0.0.1:3000
+  # Anything not matched above. cloudflared requires a catch-all as the last
+  # rule; without one it refuses to start.
+  - service: http_status:404
